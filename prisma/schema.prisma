@@ -1,0 +1,115 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id       String @id @default(cuid())
+    email    String @unique
+    password String
+
+    producers Producer[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("users")
+}
+
+model Producer {
+    id       String @id @default(cuid())
+    document String @unique
+    name     String
+
+    ownerId String
+    owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+    farms Farm[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("producers")
+}
+
+model Farm {
+    id                     String    @id @default(cuid())
+    name                   String
+    city                   String
+    state                  FarmState
+    totalAreaHectares      Float
+    arableAreaHectares     Float
+    vegetationAreaHectares Float
+
+    producerId String
+    producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+
+    plantedCultures PlantedCulture[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("farms")
+}
+
+model Culture {
+    id   String @id @default(cuid())
+    name String @unique
+
+    plantedOnFarms PlantedCulture[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name])
+    @@map("cultures")
+}
+
+model PlantedCulture {
+    id          String @id @default(cuid())
+    harvestName String
+
+    farmId    String
+    farm      Farm    @relation(fields: [farmId], references: [id], onDelete: Cascade)
+    cultureId String
+    culture   Culture @relation(fields: [cultureId], references: [id], onDelete: Restrict)
+
+    createdAt DateTime @default(now())
+
+    @@unique([farmId, cultureId, harvestName])
+    @@map("planted-cultures")
+}
+
+enum FarmState {
+    AC
+    AL
+    AP
+    AM
+    BA
+    CE
+    DF
+    ES
+    GO
+    MA
+    MT
+    MS
+    MG
+    PA
+    PB
+    PR
+    PE
+    PI
+    RJ
+    RN
+    RS
+    RO
+    RR
+    SC
+    SP
+    SE
+    TO
+}
